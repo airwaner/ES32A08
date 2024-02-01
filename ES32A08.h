@@ -35,11 +35,17 @@ class ES32A08 {
     // Display control
     void displayNumber(int number); // Display a number on the 4-digit screen
 
-	// Fonction pour contrôler la LED "PWR"
+	// Fonction pour contrôler la LED OnBoard "PWR". Pas nécessairement conditionné par une alimentation.
     void setPWRLED(bool state); 
 	
     // Relay outputs
     void setRelayState(int relay, bool state); // Set relay state, relay 0-7, state: true=ON, false=OFF
+	
+	// Boutons Key 1 --> Key 4 sous les 4 Digits.
+	 void beginButtons(); // Initialiser les boutons
+    bool readButton(int buttonNumber); // Lire l'état d'un bouton
+	
+	
   private:
   
   void sendDataToShiftRegister(uint8_t data);
@@ -48,6 +54,9 @@ class ES32A08 {
   // Déclaration des pins pour les entrées analogiques
     const int mAInputPins[4] = {36, 39, 34, 35}; // In1 à In4 pour 4-20mA
     const int voltageInputPins[4] = {32, 33, 25, 26}; // V1 à V4 pour 0-10V
+	
+	// Déclarations des pins des boutons
+    const int buttonPins[4] = {18, 19, 21, 23};
     // Private variables and functions here
 };
 

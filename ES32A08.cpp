@@ -11,16 +11,22 @@ void ES32A08::begin() {
   pinMode(LATCH_PIN, OUTPUT);
   pinMode(CLOCK_PIN, OUTPUT);
   pinMode(OE_PIN, OUTPUT);
+  
   pinMode(PWR_LED_PIN, OUTPUT);
   setPWRLED(true); // Allume la LED "PWR" au démarrage
   digitalWrite(OE_PIN, LOW); // Active l'output du 74HC595D
+  
+  // Fixer l'état des relais éteints au démarrage
+  relayStates = 0; // Assure que tous les relais sont considérés comme éteints
+  sendDataToShiftRegister(relayStates); // Envoie l'état initial des relais au 74HC595
   
 // Configuration pour la lecture des entrées numériques
     pinMode(LOAD165_PIN, OUTPUT);
     pinMode(CLK165_PIN, OUTPUT);
     pinMode(DATA165_PIN, INPUT); 
     digitalWrite(LOAD165_PIN, HIGH); // Assurez-vous que le registre est prêt à charger les données
-
+	
+	beginButtons(); // Initialise les boutons
 }
 
 float ES32A08::readAnalogmA(int channel) {
@@ -87,4 +93,15 @@ String ES32A08::getFormattedDigitalInputs() {
 void ES32A08::setPWRLED(bool state) {
     // Configure la LED pour s'allumer avec un état logique haut
     digitalWrite(PWR_LED_PIN, !state); // Inversion de l'état pour correspondre au câblage physique
+}
+
+void ES32A08::beginButtons() {
+    for(int i = 0; i < 4; i++) {
+        pinMode(buttonPins[i], INPUT_PULLUP); // Configurer les boutons en entrée avec pull-up
+    }
+}
+
+bool ES32A08::readButton(int buttonNumber) {
+    if (buttonNumber < 1 || buttonNumber > 4) return false; // Validation
+    return !digitalRead(buttonPins[buttonNumber - 1]); // Lire et inverser l'état (bouton pressé = LOW)
 }
