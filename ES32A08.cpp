@@ -26,14 +26,14 @@ void ES32A08::begin() {
 float ES32A08::readAnalogmA(int channel) {
     if (channel < 0 || channel > 3) return 0; // Validation de la plage du canal
     int adcValue = analogRead(mAInputPins[channel]); // Utilisez le numéro de broche ADC approprié
-    float current = (adcValue / 4095.0) * (20.0 - 4.0) + 4.0; // Convertit en mA, supposant une échelle 0-3.3V
+    float current = ((adcValue / 4095.0) * (20.0 - 4.0))*2.0692; // Converti en mA; avec un facteur de correction de la méthode de mesure de *2.0692
     return current;
 }
 
 float ES32A08::readAnalogVoltage(int channel) {
     if (channel < 0 || channel > 3) return 0; // Validation de la plage du canal
     int adcValue = analogRead(voltageInputPins[channel]);
-    float voltage = (adcValue / 4095.0) * 10.0; // Convertit en volts, pour une plage de 0 à 10V
+    float voltage = ((adcValue / 4095.0) * 10.0)*2.0692; // Convertit en volts, pour une plage de 0 à 10V (*2 pour facteur de correction.)
     return voltage;
 }
 
