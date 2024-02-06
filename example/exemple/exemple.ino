@@ -12,18 +12,19 @@ const long refreshInterval = 40; // Intervalle de rafraichissement inter-digits 
 void setup() {
   Serial.begin(115200);                 // initialiser le port série.
   board.begin();                        // Initialise la carte et toutes ses possibilités.
-  board.togglePWRLEDAsHeartbeat(true);  // Fait clignoter la led PWR si le booléen bool heartbeatEnabled = true; Sinon, LedPWR reste commandable par la fonction board.setPWRLED(1 ou 0).
+  board.togglePWRLEDAsHeartbeat(true);  // Fait clignoter la led PWR si le booléen heartbeatEnabled = true; Sinon, LedPWR reste commandable par la fonction board.setPWRLED(1 ou 0).
   //board.setPWRLED(0); // Forcer l'extinction de la Led PWR.
   delay(1000);  // Attends 1 seconde
 
-  board.delay1.start(1000); // Pour le point décimal, clignote chaque seconde
-  board.delay2.start(5000); // Pour le "5", clignote toutes les 2 secondes
-  board.delay3.start(10000);  // Démarrer le troisième délai de 10 secondes, si nécessaire
+  board.delay1.start(5000); // Pour le point décimal, clignote chaque seconde
+//  board.delay2.start(5000); // Pour le "5", clignote toutes les 2 secondes
+//  board.delay3.start(10000);  // Démarrer le troisième délai de 10 secondes, si nécessaire
+
 }
 
 
 void loop() {
-// delay(1000); // temps programme 50Hz suffisant en réactivité pour notre exemple.
+// delay(20); // temps programme 50Hz suffisant en réactivité pour notre exemple.
 
 // Faire clignoter 1 fois par seconde le dernier point décimal en utilisant les délais non-bloquants de la bibliothèque.
 // Combine également l'affichage d'un "5" en prenant en compte l'affichage du Point décimal si déjà affiché.
@@ -31,17 +32,22 @@ void loop() {
 //toggleFive(); //Appel de la fonction pour gérer le clignotement du 5.
 //----------------------------------------------------------------------------------------------------------------------
 
-board.afficher("9876"); // Envoi de la chaine de caractères à convertir pour l'afficheur 4 Digits.
-unsigned long currentMillis = millis();
+if (board.delay1.isRunning()) {
 
-if (currentMillis - previousUpdateTime >= refreshInterval) {
-        previousUpdateTime = currentMillis; // Mise à jour du temps pour le dernier rafraîchissement
-        board.refreshDisplay(); // Rafraîchit l'affichage seulement après l'interval spécifié
-    }
+} // Si le délai 1 (non bloquant) est toujours en cours
+
+if (board.delay1.isCompleted()) {
+
+} // Si le délai 1 (non bloquant) est terminé (valide 1 seule itération)
+
+
+  board.afficher("1310"); // Envoi de la chaine de caractères à convertir pour l'afficheur 4 Digits.
+//  board.refreshDisplay(10,false); // Rafraîchit l'affichage avec un délai bloquant (true) où non bloquant (false)
+
   board.updatePWRLED();  // Fais clignoter à chaque itération du programme si la fonction togglePWRLEDAsHeartbeat(true); à étét déclarée en setup().
  
    if (board.delay2.isCompleted()) {
-    Serial.println("Délai 2 terminé");
+   // Serial.println("Délai 2 terminé");
     
   // Test des relais 
 
@@ -61,7 +67,7 @@ if (currentMillis - previousUpdateTime >= refreshInterval) {
   }
 
   if (board.delay3.isCompleted()) {
-    Serial.println("Délai 3 terminé");
+   // Serial.println("Délai 3 terminé");
     board.delay3.start(10000);  // Optionnel: redémarrer le délai, si vous utilisez delay3
   }
 
@@ -100,6 +106,7 @@ if (currentMillis - previousUpdateTime >= refreshInterval) {
   for (int i = 0; i < 4; i++) {
     float current = board.readAnalogmA(i);       // Remplacez i par la broche ADC correspondante
     float voltage = board.readAnalogVoltage(i);  // Idem
+    /*
     Serial.print("Entrée ");
     Serial.print(i);
     Serial.print(": ");
@@ -107,26 +114,32 @@ if (currentMillis - previousUpdateTime >= refreshInterval) {
     Serial.print(" mA, ");
     Serial.print(voltage);
     Serial.println(" V");
+    */
   }
 
   // Lecture de l'entrée numérique n°8 en particulier.
   bool entreeNumeriqueN8 = board.getDigitalInputState(8);
+  /*
   Serial.print("Entrée Numérique N°8 ");
   Serial.print(8);
   Serial.print(": ");
   Serial.println(entreeNumeriqueN8 ? "HIGH" : "LOW");
+  /*/
 
   // Lecture de l'état des 8 entrées, et affichage en binaire 8 bits pour visualisation directe.
   String digitalInputsBinary = board.getFormattedDigitalInputs();
+  /*
   Serial.print("Binaire reflétant les entrées numériques : ");
   Serial.println(digitalInputsBinary);  // Affiche l'état des entrées numériques en format binaire de 8 bits
-
+*/
   // Lecture et affichage des entrées Boutons (Key 1 --> Key 4)
   for (int i = 1; i <= 4; i++) {
     if (board.readButton(i)) {
+      /*
       Serial.print("Bouton ");
       Serial.print(i);
       Serial.println(" pressé");
+      */
     }
   }
 }

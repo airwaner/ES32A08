@@ -122,16 +122,6 @@ DigitToSegment digitToSegmentMap[] = {
 	{'.', 0b10000000}
 };
 
-void ES32A08::refreshDisplay() {
-    static unsigned long lastUpdateTime = 0;
-    const long refreshInterval = 5; // intervalle en millisecondes pour le rafraîchissement de chaque digit
-    if(millis() - lastUpdateTime > refreshInterval) {
-        lastUpdateTime = millis();
-        sendToShiftRegister(); // On appel la fonction d'envoi vers les 3 registres à décalage.
-        // Par exemple, utiliser shiftOut() pour envoyer les données aux registres à décalage
-    }
-}
-
 void ES32A08::sendToShiftRegister() {
 // Inversez les bits du paramètre `digits` pour que '0' active le digit
     //digits = ~digits; // Cela inverse tous les bits; un '0' devient un '1' et vice versa. Essai car les digits restent noirs.
@@ -148,12 +138,28 @@ void ES32A08::updateRelays(byte newRelays) {
     sendToShiftRegister(); // Appelle la méthode pour envoyer l'état actuel
 }
 
-void ES32A08::updateDisplay(byte digit, byte segments) {
+void ES32A08::updateDisplay(byte digit, byte segments){
+	/*
+    static unsigned long derniereMajMillis = 0; // Conserve la dernière fois que la fonction a été appelée
+    const unsigned long IntervalleRaffraichissement = 5; //Délai fixe entre les appels, par exemple 10 ms
+
+    unsigned long tempsActuel = millis();
+    if (tempsActuel - derniereMajMillis < IntervalleRaffraichissement) {
+        // Si l'intervalle n'est pas écoulé, retourne immédiatement et sort sans exécuter le reste de la fonction.
+        return;
+    }
+
+    // Mise à jour de 'lastUpdate' pour l'heure actuelle
+    derniereMajMillis = tempsActuel;
+	*/
+delayMicroseconds(800);
+    // Votre logique de mise à jour de l'affichage ici
     currentDigits = digit; // Adaptez en fonction de votre logique
     currentSegments = segments;
     sendToShiftRegister(); // Met à jour l'affichage
-	delay(1);
+    // Note: Assurez-vous que toute logique ici est conçue pour être exécutée après l'intervalle spécifié
 }
+
 void ES32A08::displayButtonPressed(int button) {
     
     // Affiche le chiffre correspondant au bouton appuyé
@@ -184,7 +190,6 @@ void ES32A08::afficher(const char* message) {
         // Convertit chaque caractère en segments
         uint8_t segments = charToSegments(message[i]);
         // Affiche le caractère sur le digit correspondant
-        // Assurez-vous de mettre à jour les digits un par un ici
         updateDisplay(digitNumber[i+1], segments); // Cette fonction doit être implémentée pour gérer l'affichage
     }
 }

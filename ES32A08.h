@@ -48,8 +48,7 @@ class ES32A08 {
     uint8_t charToSegments(char c); // fonction qui récupérera le mot binaire correspondant au caractère à afficher (dans le tableau de correspondance).
 	
 	void afficher(const char* message); // fonction d'affichage
-    void refreshDisplay(); // Fonction pour rafraîchir l'affichage	
-	
+    
     NonBlockingDelay delay1; // Premier délai non bloquant
     NonBlockingDelay delay2; // Second délai non bloquant
     NonBlockingDelay delay3; // Troisième délai non bloquant, si nécessaire et ainsi de suite.
