@@ -6,8 +6,10 @@ bool etatPWRLed = 1;
 bool decimalPointOn = false; // Utilisé pour l'exemple du point décimal clignotant 1 fois par seconde.
 bool fiveOn = false; // Pour suivre l'état du "5"
 
-unsigned long previousUpdateTime = 0; // Stocke la dernière fois que l'affichage a été mis à jour
-const long refreshInterval = 40; // Intervalle de rafraichissement inter-digits en millisecondes
+int currentValue = 4;  // Valeur initiale à afficher
+
+
+
 
 void setup() {
   Serial.begin(115200);                 // initialiser le port série.
@@ -16,14 +18,19 @@ void setup() {
   //board.setPWRLED(0); // Forcer l'extinction de la Led PWR.
   delay(1000);  // Attends 1 seconde
 
-  board.delay1.start(5000); // Pour le point décimal, clignote chaque seconde
+  board.delay1.start(500); // Commencez un délai non bloquant de 500 ms
 //  board.delay2.start(5000); // Pour le "5", clignote toutes les 2 secondes
 //  board.delay3.start(10000);  // Démarrer le troisième délai de 10 secondes, si nécessaire
 
+    // ou
+//    board.beginDisplayValue("A123", 500); // Exemple avec une chaîne de caractères avec un temps
 }
 
 
 void loop() {
+
+board.afficher("A15A"); // Exemple avec un nombre
+
 // delay(20); // temps programme 50Hz suffisant en réactivité pour notre exemple.
 
 // Faire clignoter 1 fois par seconde le dernier point décimal en utilisant les délais non-bloquants de la bibliothèque.
@@ -40,8 +47,7 @@ if (board.delay1.isCompleted()) {
 
 } // Si le délai 1 (non bloquant) est terminé (valide 1 seule itération)
 
-
-  board.afficher("1310"); // Envoi de la chaine de caractères à convertir pour l'afficheur 4 Digits.
+//  board.afficher("1310"); // Envoi de la chaine de caractères à convertir pour l'afficheur 4 Digits.
 //  board.refreshDisplay(10,false); // Rafraîchit l'affichage avec un délai bloquant (true) où non bloquant (false)
 
   board.updatePWRLED();  // Fais clignoter à chaque itération du programme si la fonction togglePWRLEDAsHeartbeat(true); à étét déclarée en setup().

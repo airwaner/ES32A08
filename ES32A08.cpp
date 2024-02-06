@@ -139,20 +139,7 @@ void ES32A08::updateRelays(byte newRelays) {
 }
 
 void ES32A08::updateDisplay(byte digit, byte segments){
-	/*
-    static unsigned long derniereMajMillis = 0; // Conserve la dernière fois que la fonction a été appelée
-    const unsigned long IntervalleRaffraichissement = 5; //Délai fixe entre les appels, par exemple 10 ms
-
-    unsigned long tempsActuel = millis();
-    if (tempsActuel - derniereMajMillis < IntervalleRaffraichissement) {
-        // Si l'intervalle n'est pas écoulé, retourne immédiatement et sort sans exécuter le reste de la fonction.
-        return;
-    }
-
-    // Mise à jour de 'lastUpdate' pour l'heure actuelle
-    derniereMajMillis = tempsActuel;
-	*/
-delayMicroseconds(800);
+	delayMicroseconds(800); // un délai bloquant obligatoire car comme chaque programme est unique, il n'est pas possible de gérer efficacement le temps de cycle programme. Cela influence donc la lisibilité des chiffres sont l'on utilise des délais non bloquants. Choix à été fait de passer par un µdélai pour impacter le moins possible le reste du programme.
     // Votre logique de mise à jour de l'affichage ici
     currentDigits = digit; // Adaptez en fonction de votre logique
     currentSegments = segments;
@@ -180,6 +167,7 @@ uint8_t ES32A08::charToSegments(char c) {
 		case '9': return 0b01101111;
         case '.': return 0b10000000;
         case ' ': return 0b00000000;
+		case 'A': return 0b01110111;
         // Ajoutez les autres cas ici pour chaque caractère
         default:  return 0b00000000; // Retourne 0 pour les caractères non reconnus
     }
@@ -193,6 +181,21 @@ void ES32A08::afficher(const char* message) {
         updateDisplay(digitNumber[i+1], segments); // Cette fonction doit être implémentée pour gérer l'affichage
     }
 }
+
+void ES32A08::beginDisplayValue(const String &value, unsigned long updateDelay) {
+    displayUpdateDelay.start(updateDelay); // Configure le délai avec la valeur spécifiée
+    
+    // Si la valeur est numérique et inférieure à 10000, formatez-la pour supprimer les zéros non significatifs
+    if (value.toInt() < 10000 && value.toInt() > 0) {
+        char buffer[5]; // Assez grand pour n'importe quel nombre à 4 chiffres + terminateur null
+        sprintf(buffer, "%d", value.toInt()); // Convertit en chaîne sans zéros non significatifs sur la gauche
+        afficher(buffer); // Affiche la valeur
+    } else {
+        // Pour les chaînes de caractères ou les nombres ≥ 10000, affiche directement la valeur
+        afficher(value.c_str()); // Affiche la chaîne telle quelle
+    }
+}
+
 
 void ES32A08::setRelay(int relay, bool state) {
     if(state)

@@ -45,6 +45,8 @@ class NonBlockingDelay {
 class ES32A08 {
   public:
   
+  void beginDisplayValue(const String &value, unsigned long updateDelay); // Démarre l'affichage avec la valeur spécifiée et le temps spécifié.
+  
     uint8_t charToSegments(char c); // fonction qui récupérera le mot binaire correspondant au caractère à afficher (dans le tableau de correspondance).
 	
 	void afficher(const char* message); // fonction d'affichage
@@ -100,6 +102,10 @@ class ES32A08 {
 void displayButtonPressed(int button);
 
   private:
+  
+  NonBlockingDelay displayUpdateDelay; // Délai non bloquant pour l'actualisation de l'affichage dans la fonction ES32A08::beginDisplayValue(const String &value, unsigned long updateDelay)
+  
+  
     byte displayBuffer[4]; // Tableau pour stocker l'état des segments pour les 4 digits
     byte currentRelays;
     byte currentDigits;
