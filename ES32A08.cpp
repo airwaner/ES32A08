@@ -139,9 +139,7 @@ void ES32A08::updateRelays(byte newRelays) {
 }
 
 void ES32A08::updateDisplay(byte digit, byte segments){
-	delayMicroseconds(800); // un délai bloquant obligatoire car comme chaque programme est unique, il n'est pas possible de gérer efficacement le temps de cycle programme. Cela influence donc la lisibilité des chiffres sont l'on utilise des délais non bloquants. Choix à été fait de passer par un µdélai pour impacter le moins possible le reste du programme.
-    // Votre logique de mise à jour de l'affichage ici
-    currentDigits = digit; // Adaptez en fonction de votre logique
+	currentDigits = digit; // Adaptez en fonction de votre logique
     currentSegments = segments;
     sendToShiftRegister(); // Met à jour l'affichage
     // Note: Assurez-vous que toute logique ici est conçue pour être exécutée après l'intervalle spécifié
@@ -179,7 +177,13 @@ void ES32A08::afficher(const char* message) {
         uint8_t segments = charToSegments(message[i]);
         // Affiche le caractère sur le digit correspondant
         updateDisplay(digitNumber[i+1], segments); // Cette fonction doit être implémentée pour gérer l'affichage
+		delayMicroseconds(500); // un délai bloquant obligatoire car comme chaque programme est unique, il n'est pas possible de gérer efficacement le temps de cycle programme. Cela influence donc la lisibilité des chiffres sont l'on utilise des délais non bloquants. Choix à été fait de passer par un µdélai pour impacter le moins possible le reste du programme.Varier entre 1 et 500µS pour changer la luminosité.
     }
+	// On éteint tous les digits une fois les 4 digits affichés 1 par 1 afin que le dernier ne soit pas plus visible que les autres à cause du temps d'éxécution du reste du programme.
+	currentDigits = 0b11111111; // Désélectionne tous les digits 
+    currentSegments = 0b00000000; // Éteint tous les segments
+    sendToShiftRegister(); // Applique l'état d'éteignement
+	delayMicroseconds(1); // Temps pour fixer l'état d'exctinction. Plus ce délai est long, plus la chance de rendre perceptible l'extinction augmentera en fonction de la durée de fonctionnement du reste du programme. Jusque 25mS de temps programme total, le résultat est acceptable et lisible !
 }
 
 void ES32A08::beginDisplayValue(const String &value, unsigned long updateDelay) {

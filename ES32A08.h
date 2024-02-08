@@ -49,6 +49,8 @@ class ES32A08 {
   
     uint8_t charToSegments(char c); // fonction qui récupérera le mot binaire correspondant au caractère à afficher (dans le tableau de correspondance).
 	
+	void afficherMessage(const char* message); // Fonction permettant de mettre a jour une variable de stockage du message à afficher sur le 4 digits. Cela permet d'appeler l'affichage à intervales réguliers sans ce soucier de l'écriture du message.
+	
 	void afficher(const char* message); // fonction d'affichage
     
     NonBlockingDelay delay1; // Premier délai non bloquant
@@ -102,7 +104,7 @@ class ES32A08 {
 void displayButtonPressed(int button);
 
   private:
-  
+    
   NonBlockingDelay displayUpdateDelay; // Délai non bloquant pour l'actualisation de l'affichage dans la fonction ES32A08::beginDisplayValue(const String &value, unsigned long updateDelay)
   
   
