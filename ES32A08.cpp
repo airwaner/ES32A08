@@ -1,5 +1,4 @@
 #include "ES32A08.h"
-#include <Wire.h> // Include Wire if needed for I2C communication, such as with a display
 
 // Constructeur et méthodes de NonBlockingDelay
 NonBlockingDelay::NonBlockingDelay() : previousMillis(0), delayInterval(0), running(false) {}
@@ -51,14 +50,11 @@ void ES32A08::begin() {
   pinMode(PWR_LED_PIN, OUTPUT);
   pinMode(LED_PIN, OUTPUT); // Définition de la broche Led BLEUE comme sortie
 
-
-for(int clignotements = 0; clignotements < 20; clignotements++) {	// Boucle sur les 8 relais
-static bool ledState = false;
-    setPWRLED(ledState); // Piloter la Led PWR de la carte ES32A08.
-	digitalWrite(LED_PIN, !ledState); // Piloter la LED BLEUE de l'Esp32
-	ledState = !ledState; // Change l'état pour la prochaine itération
-}
-   
+  pinMode(buttonPins[0], INPUT_PULLUP); // Configurer les boutons en entrée avec pull-up
+  pinMode(buttonPins[1], INPUT_PULLUP); // Configurer les boutons en entrée avec pull-up
+  pinMode(buttonPins[2], INPUT_PULLUP); // Configurer les boutons en entrée avec pull-up
+  pinMode(buttonPins[3], INPUT_PULLUP); // Configurer les boutons en entrée avec pull-up
+  
   // Fixer l'état des relais éteints au démarrage
   beginRelays(); //Forcer les relais à l'état bas au démarrage de la carte.
    
@@ -68,8 +64,8 @@ static bool ledState = false;
     pinMode(DATA165_PIN, INPUT); 
     digitalWrite(LOAD165_PIN, HIGH); // Assurez-vous que le registre est prêt à charger les données
 	
-	beginButtons(); // Initialise les boutons
 }
+
 void ES32A08::clearAll() {
 	currentRelays = 0;
 	currentDigits = 0;
@@ -131,11 +127,6 @@ void ES32A08::sendToShiftRegister() {
     shiftOut(DATA_PIN, CLOCK_PIN, MSBFIRST, currentDigits);
     shiftOut(DATA_PIN, CLOCK_PIN, MSBFIRST, currentSegments);
     digitalWrite(LATCH_PIN, HIGH);
-}
-
-void ES32A08::updateRelays(byte newRelays) {
-    currentRelays = newRelays;
-    sendToShiftRegister(); // Appelle la méthode pour envoyer l'état actuel
 }
 
 void ES32A08::updateDisplay(byte digit, byte segments){
@@ -234,9 +225,9 @@ void ES32A08::setRelayState(int relay, bool state) {
 }
 
 void ES32A08::setRelays(unsigned long relayStates) {
-  // Assumez que les 8 premiers bits sont pour les relais, ajustez selon votre configuration
+	currentRelays = relayStates;  // On met à jour les 8 bits d'état des 8 relais. 1 allumé, 0 éteint. Position de 1 à 8. 
   sendToShiftRegister(); // Envoyez les données avec les 24 bits si vous avez 3 registres
-}
+} // Permet le contrôle des 8 relais en une seule fonction par un 8 bits.
 
 
 uint8_t ES32A08::readDigitalInputs() {
@@ -289,12 +280,6 @@ void ES32A08::updatePWRLED() {
         ledState = !ledState; // Change l'état pour la prochaine itération
     }
 } // Configure la LED en tant que preuve du déroulement du programme. Celle-ci change d'état à chaque itération de la boucle programme.
-
-void ES32A08::beginButtons() {
-    for(int i = 0; i < 4; i++) {
-        pinMode(buttonPins[i], INPUT_PULLUP); // Configurer les boutons en entrée avec pull-up
-    }
-}
 
 bool ES32A08::readButton(int buttonNumber) {
     return !digitalRead(buttonPins[buttonNumber-1]); // Lire et inverser l'état (bouton pressé = LOW)

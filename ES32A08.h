@@ -4,44 +4,43 @@
 #include "Arduino.h"
 
 // Définition des broches utilisées par les 3 resistres à décalage 74HC595D. Ceux-ci permettent de contrôler les 8 relais, ainsi que l'affichage sur les 4 digits.
-#define DATA_PIN 13  // Correspond à IO13 sur ESP32
-#define LATCH_PIN 14 // Correspond à IO14 sur ESP32
-#define CLOCK_PIN 27 // Correspond à IO27 sur ESP32
-#define OE_PIN 4     // Correspond à IO04 sur ESP32
+#define DATA_PIN 13  // Broche de données pour les 74HC595D (affichage et relais)
+#define LATCH_PIN 14 // Broche de verrouillage pour les 74HC595D
+#define CLOCK_PIN 27 // Broche d'horloge pour les 74HC595D
+#define OE_PIN 4     // Broche de sortie d'état (Output Enable) pour les 74HC595D
 
 // Définition des broches utilisées par le 74HC165 (registre à décalage qui permet la lecture des 8 entrées numériques)
 #define LOAD165_PIN 16 // Broche LOAD sur IO16 de l'ESP32
 #define CLK165_PIN 17  // Broche CLK sur IO17 de l'ESP32
 #define DATA165_PIN 5  // Broche DATA sur IO5 de l'ESP32
 
-#define PWR_LED_PIN 15 // Définition de la broche pour la LED "PWR".
-#define LED_PIN 2 // Définition de la brocche de la led BLEUE intégrée à l'ESP32.
+#define PWR_LED_PIN 15 // Broche pour la LED "PWR" sur la carte
+#define LED_PIN 2 // Broche pour la LED intégrée sur l'ESP32
 
 
-// Définition de la structure pour associer chaque chiffre à son code sur l'afficheur à 7 segments
+// Structure pour mapper les chiffres aux segments de l'afficheur 7 segments
 struct DigitToSegment {
-    char digit;
-    byte segment;
+    char digit; // Caractère (chiffre)
+    byte segment; // Code correspondant au segment
 };
 
-// Déclaration externe du tableau de correspondances
-extern DigitToSegment digitToSegmentMap[];
+extern DigitToSegment digitToSegmentMap[]; // Tableau de correspondance des caractères vers mot binaire 8 bits.
 
-
+// Classe pour gérer des délais sans bloquer l'exécution du programme
 class NonBlockingDelay {
   private:
-    unsigned long previousMillis;
-    unsigned long delayInterval;
-    bool running;
+    unsigned long previousMillis; // Dernier enregistrement de temps
+    unsigned long delayInterval; // Intervalle de délai
+    bool running; // Si le délai est actif
 
   public:
     NonBlockingDelay(); // Constructeur
-    void start(unsigned long interval);
-    bool isCompleted();
-    bool isRunning();
+    void start(unsigned long interval); // Démarrer le délai
+    bool isCompleted(); // Vérifier si le délai est terminé
+    bool isRunning(); // Vérifier si le délai est en cours
 };
 
-
+// Classe principale pour la gestion de la carte ES32A08
 class ES32A08 {
   public:
   
@@ -84,8 +83,6 @@ class ES32A08 {
     void setRelayState(int relay, bool state); // Set relay state, relay 0-7, state: true=ON, false=OFF
 	void setRelays(unsigned long relayStates); // Fonction de pilotage des 8 relais grâce à une suite de 8 bits, correspondant à l'état des 8 relais à piloter.
 	
-	// Boutons Key 1 --> Key 4 sous les 4 Digits.
-	 void beginButtons(); // Initialiser les boutons
     bool readButton(int buttonNumber); // Lire l'état d'un bouton
 	
 	
@@ -95,13 +92,12 @@ class ES32A08 {
     void displayNumber(int number); // Affiche un nombre sur l'affichage 4 digits
     void setRelay(int relayNumber, bool state); // Contrôle l'état d'un relais spécifique
 	
-	void updateRelays(byte newRelays); // Met à jour et envoie l'état des relais
-    void updateDisplay(byte digit, byte segments); // Met à jour et envoie les données pour l'affichage
+	void updateDisplay(byte digit, byte segments); // Met à jour et envoie les données pour l'affichage
 	static const byte digitToSegment[11]; // Déclaration du tableau des segments correspondant aux chiffres.
 	static const byte digitNumber[8]; // Déclaration du tableau mot 8 bits correspondant à quel digit.
 	
-	// Fonction pour afficher le bouton appuyé sur l'écran 4 digits
-void displayButtonPressed(int button);
+void displayButtonPressed(int button); 	// Fonction pour afficher le bouton appuyé sur l'écran 4 digits
+
 
   private:
     
@@ -109,9 +105,9 @@ void displayButtonPressed(int button);
   
   
     byte displayBuffer[4]; // Tableau pour stocker l'état des segments pour les 4 digits
-    byte currentRelays;
-    byte currentDigits;
-    byte currentSegments;
+    byte currentRelays; // État actuel des relais
+    byte currentDigits; // Digit actuellement sélectionné pour l'affichage
+    byte currentSegments; // Segments actuellement activés pour l'affichage
     void sendToShiftRegister(); // Méthode privée pour envoyer l'état à tous les registres
 	
   void sendDataToShiftRegister(unsigned long data, int bitsCount);
@@ -129,7 +125,6 @@ void displayButtonPressed(int button);
 	
 	// Déclarations des pins des boutons
     const int buttonPins[4] = {18, 19, 21, 23};
-    // Private variables and functions here
 };
 
 #endif
