@@ -14,24 +14,20 @@ Installation
 
 Pour utiliser la bibliothèque ES32A08, téléchargez la dernière version depuis cette page GitHub et incluez-la dans votre projet Arduino IDE.
 
-plaintext
-
 1. Allez dans Sketch > Include Library > Add .ZIP Library dans l'Arduino IDE et sélectionnez le fichier téléchargé.
 2. Ou, décompressez le contenu et placez-le dans le répertoire 'libraries' de votre dossier Arduino.
 
-Utilisation
 
+
+Utilisation
 Incluez la bibliothèque dans votre sketch Arduino :
 
-cpp
-
 #include <ES32A08.h>
-
 ES32A08 board;
 
-Initialisez la carte dans la fonction setup() :
 
-cpp
+
+Initialisez la carte dans la fonction setup() :
 
 void setup() {
   board.begin(); // Initialise la carte ES32A08
@@ -39,15 +35,17 @@ void setup() {
 
 Dans la boucle loop(), vous pouvez utiliser les méthodes fournies par la bibliothèque pour contrôler la carte :
 
-cpp
-
 void loop() {
   // Utilisez les méthodes de la bibliothèque ici
 }
 
+
+
 Exemples
-
 Consultez le dossier examples pour des exemples montrant comment utiliser la bibliothèque pour réaliser différentes tâches.
-Contribution
 
+
+
+
+Contribution
 Les contributions à ce projet sont bienvenues ! Si vous souhaitez contribuer, veuillez forker le dépôt, apporter vos changements, et soumettre une pull request.
