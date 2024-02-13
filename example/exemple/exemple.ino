@@ -54,23 +54,26 @@ board.afficher(" 0. "); // Exemple avec un nombre
   }
 
    board.setRelays(0b00000000);  // Désactive tous les relais
-
+    
+    
+    board.delay3.start(10000);  // On démarre maintenant le délai 3 puisque le 2 est terminé
   }
 
-  if (board.delay3.isCompleted()) {
-   // Serial.println("Délai 3 terminé");
-    board.delay3.start(10000);  // Optionnel: redémarrer le délai, si vous utilisez delay3
+  if (board.delay3.isRunning()) {
+    float voltage = board.readAnalogVoltage(0); // Lit la tension sur l'entrée 0-10V N°1
+  // Affiche la valeur convertie sur l'afficheur 4 digits
+  board.afficher(voltage); // On se sert de l'afficheur pour afficher la valeur. Maxi 4 digits +1 virgule.
   }
 
 // Affiche le numéro du bouton appuyé (Key1-Key4) et l'affiche à l'emplacement du N° du Bouton.
 // Allume Également le temps de l'appui bouton le relais associé à son numéro.
-
   for (int i = 1; i <= 4; i++) {
     while (board.readButton(i)) {
       board.updateDisplay(board.digitNumber[i], board.digitToSegment[i]);
-      board.setRelay(i, true);  // Active le relais concerné par le bouton.
+      board.setRelay(i, true);  // Active le relais concerné par le bouton tant que l'appui est conservé
     }
-    board.setRelay(i, false);  // Active le relais concerné par le bouton.
+    board.setRelay(i, false);  // Désactive le relais concerné par le relâchement du bouton.
+    board.afficher(""); // On efface l'écran car le bouton est relaché!
   }
 
   // Cas du pilotage d'un seul relais en particulier
@@ -83,7 +86,7 @@ board.afficher(" 0. "); // Exemple avec un nombre
   for (int i = 0; i < 4; i++) {
     float current = board.readAnalogmA(i);       // Remplacez i par la broche ADC correspondante
     float voltage = board.readAnalogVoltage(i);  // Idem
-    
+    /*
     Serial.print("Entrée ");
     Serial.print(i);
     Serial.print(": ");
@@ -91,32 +94,32 @@ board.afficher(" 0. "); // Exemple avec un nombre
     Serial.print(" mA, ");
     Serial.print(voltage);
     Serial.println(" V");
-    
+    */
   }
 
   // Lecture de l'entrée numérique n°8 en particulier.
   bool entreeNumeriqueN8 = board.getDigitalInputState(8);
-
+  /*
   Serial.print("Entrée Numérique N°8 ");
   Serial.print(8);
   Serial.print(": ");
   Serial.println(entreeNumeriqueN8 ? "HIGH" : "LOW");
-  
+  */
 
   // Lecture de l'état des 8 entrées numériques, et affichage en binaire 8 bits pour visualisation directe des 8 entrées.
   String digitalInputsBinary = board.getFormattedDigitalInputs();
-  
+  /*
   Serial.print("Binaire reflétant les entrées numériques : ");
   Serial.println(digitalInputsBinary);  // Affiche l'état des entrées numériques en format binaire de 8 bits
-
+  */
   // Lecture et affichage des entrées Boutons (Key 1 --> Key 4)
   for (int i = 1; i <= 4; i++) {
     if (board.readButton(i)) {
-      
+      /*
       Serial.print("Bouton ");
       Serial.print(i);
       Serial.println(" pressé");
-      
+      */
     }
   }
 }
