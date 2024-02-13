@@ -157,25 +157,118 @@ uint8_t ES32A08::charToSegments(char c) {
         case '.': return 0b10000000;
         case ' ': return 0b00000000;
 		case 'A': return 0b01110111;
-        // Ajoutez les autres cas ici pour chaque caractère
+		case '-': return 0b01000000;
+        // Ajouter les autres cas ici pour chaque caractère
         default:  return 0b00000000; // Retourne 0 pour les caractères non reconnus
     }
 }
 
+// Fonction d'affichage pour les chaines de caractères:
 void ES32A08::afficher(const char* message) {
     for(int i = 0; message[i] != '\0' && i < 4; i++) {
         // Convertit chaque caractère en segments
         uint8_t segments = charToSegments(message[i]);
         // Affiche le caractère sur le digit correspondant
         updateDisplay(digitNumber[i+1], segments); // Cette fonction doit être implémentée pour gérer l'affichage
-		delayMicroseconds(500); // un délai bloquant obligatoire car comme chaque programme est unique, il n'est pas possible de gérer efficacement le temps de cycle programme. Cela influence donc la lisibilité des chiffres sont l'on utilise des délais non bloquants. Choix à été fait de passer par un µdélai pour impacter le moins possible le reste du programme.Varier entre 1 et 500µS pour changer la luminosité.
+		delayMicroseconds(2000); // un délai bloquant obligatoire car comme chaque programme est unique, il n'est pas possible de gérer efficacement le temps de cycle programme. Cela influence donc la lisibilité des chiffres sont l'on utilise des délais non bloquants. Choix à été fait de passer par un µdélai pour impacter le moins possible le reste du programme.Varier entre 1 et 500µS pour changer la luminosité.
     }
 	// On éteint tous les digits une fois les 4 digits affichés 1 par 1 afin que le dernier ne soit pas plus visible que les autres à cause du temps d'éxécution du reste du programme.
 	currentDigits = 0b11111111; // Désélectionne tous les digits 
     currentSegments = 0b00000000; // Éteint tous les segments
     sendToShiftRegister(); // Applique l'état d'éteignement
-	delayMicroseconds(1); // Temps pour fixer l'état d'exctinction. Plus ce délai est long, plus la chance de rendre perceptible l'extinction augmentera en fonction de la durée de fonctionnement du reste du programme. Jusque 25mS de temps programme total, le résultat est acceptable et lisible !
+	delayMicroseconds(0); // Temps pour fixer l'état d'exctinction. Plus ce délai est long, plus la chance de rendre perceptible l'extinction augmentera en fonction de la durée de fonctionnement du reste du programme. Jusque 25mS de temps programme total, le résultat est acceptable et lisible !
 }
+
+// Fonction d'affichage pour les entiers:
+void ES32A08::afficher(int number) {
+	
+	
+    if (number > 9999 || number < -999) {
+        // Dépassement de capacité, on affiche des tirets
+        afficher(" -- ");
+    } else {
+		char buffer[5]; // Buffer pour contenir le nombre + caractère de fin de chaîne
+    snprintf(buffer, sizeof(buffer), "%4d", number); // Formatte le nombre en 4 chiffres, complétés par des espaces si nécessaire
+
+    for (int i = 0; i < 4; i++) {
+        if (buffer[i] == ' ') {
+            // Si le caractère est un espace, éteindre les segments pour ce digit
+            updateDisplay(digitNumber[i + 1], 0x00); // Assurez-vous que cette ligne correspond à la manière dont votre bibliothèque éteint un digit
+        } else {
+            // Convertit le caractère en segments et met à jour l'affichage pour le digit courant
+            updateDisplay(digitNumber[i + 1], charToSegments(buffer[i]));
+        }
+        delayMicroseconds(2000); // Délai pour la persistance rétinienne, remplacez si nécessaire par une approche non bloquante
+    }
+
+    // Éteint tous les segments après le dernier digit affiché pour éviter qu'il reste allumé plus longtemps que les autres
+    currentDigits = 0b11111111 ; // Sélectionne tous les digit pour éteindre l'affichage
+    currentSegments = 0b00000000 ; // Éteint tous les segments
+    sendToShiftRegister();
+    delayMicroseconds(0); // Délai très court pour fixer l'état d'extinction, ajuster en fonction des besoins.
+    }  
+}
+
+void ES32A08::afficher(float number) {
+    // Étape 1: Vérification de la capacité d'affichage
+    int numIntPart = int(number); // Partie entière du nombre
+    float numDecPart = number - numIntPart; // Partie décimale du nombre
+    int numIntPartDigits = numIntPart > 0 ? (int)log10((double)numIntPart) + 1 : 1; // Nombre de chiffres dans la partie entière
+    int decimalPlaces = numIntPartDigits >= 4 ? 0 : 3 - numIntPartDigits; // Calcul des décimales possibles
+
+    // Si la partie entière dépasse les 4 chiffres ou nécessite plus de l'espace disponible pour les décimales
+    if (numIntPartDigits > 4 || (numIntPartDigits == 4 && numDecPart > 0)) {
+        // Affiche " -- " pour indiquer l'impossibilité de l'affichage correct du nombre
+        afficher("--");
+        return;
+    }
+
+    // Étape 2: Conversion du nombre en chaîne avec les décimales appropriées
+    char buffer[6]; // Buffer pour le nombre converti en chaîne
+    dtostrf(number, 4, decimalPlaces, buffer);
+
+    // Étape 3: Suppression des espaces blancs initiaux pour les nombres < 1
+    char *trimmedBuffer = buffer;
+    while (*trimmedBuffer == ' ') {
+        trimmedBuffer++;
+    }
+
+    // Étape 4: Inversion de l'ordre des caractères pour l'affichage
+    char reversedBuffer[5] = {' ', ' ', ' ', ' ', '\0'};
+    int trimmedLen = strlen(trimmedBuffer);
+    for (int i = 0; i < trimmedLen; i++) {
+        reversedBuffer[i] = trimmedBuffer[trimmedLen - 1 - i];
+    }
+
+    // Étape 5: Affichage en gérant spécialement le point décimal
+    for (int i = 0; i < 4; i++) {
+        char c = reversedBuffer[i];
+        uint8_t segments;
+        
+        if (c == '.') {
+            if (i < 3 && reversedBuffer[i + 1] != ' ') {
+                segments = charToSegments(reversedBuffer[i + 1]) | 0b10000000;
+                reversedBuffer[i + 1] = ' '; // Marque le chiffre comme traité
+            } else {
+                segments = 0b10000000;
+            }
+        } else if (c != ' ') {
+            segments = charToSegments(c);
+        } else {
+            segments = 0; // Éteint le segment pour l'espace
+        }
+
+        updateDisplay(digitNumber[4 - i], segments);
+        delayMicroseconds(2000);
+    }
+
+    // Étape 6: Éteindre tous les segments après l'affichage
+    currentDigits = 0b11111111;
+    currentSegments = 0b00000000;
+    sendToShiftRegister();
+    delayMicroseconds(0);
+}
+
 
 void ES32A08::beginDisplayValue(const String &value, unsigned long updateDelay) {
     displayUpdateDelay.start(updateDelay); // Configure le délai avec la valeur spécifiée

@@ -47,11 +47,7 @@ class ES32A08 {
   void beginDisplayValue(const String &value, unsigned long updateDelay); // Démarre l'affichage avec la valeur spécifiée et le temps spécifié.
   
     uint8_t charToSegments(char c); // fonction qui récupérera le mot binaire correspondant au caractère à afficher (dans le tableau de correspondance).
-	
-	void afficherMessage(const char* message); // Fonction permettant de mettre a jour une variable de stockage du message à afficher sur le 4 digits. Cela permet d'appeler l'affichage à intervales réguliers sans ce soucier de l'écriture du message.
-	
-	void afficher(const char* message); // fonction d'affichage
-    
+
     NonBlockingDelay delay1; // Premier délai non bloquant
     NonBlockingDelay delay2; // Second délai non bloquant
     NonBlockingDelay delay3; // Troisième délai non bloquant, si nécessaire et ainsi de suite.
@@ -89,7 +85,15 @@ class ES32A08 {
 	void clearDisplay(); // Fonction pour effacer l'affichage 4 Digits.
 	void clearAll(); // Efface tous les états des relais et de l'affichage
     void sendToShiftRegister(byte segments, byte digits, byte relays); // Envoie des données aux registres à décalage
-    void displayNumber(int number); // Affiche un nombre sur l'affichage 4 digits
+	
+	
+	// Choix est fait de "surcharger" volontairement le nombre de fonctions afficher(). Ceci permet de gérer efficacement l'affichage de n'importe quel type de valeur dans entrer dans un système complexe de comparaisons. Dans l'usage, l'utilisateur appelle simplement ES32A08.afficher(); et ce, peu importe le type de valeur, pour peu que la chaîne ne contienne que 4 digits maximum à afficher.
+	void afficher(int number); // Affiche un nombre sur l'affichage 4 digits
+	void afficher(float number); // Affiche un nombre flottant sur le 4 digits en prenant en compte les virgules.
+	void afficher(const char* message); // fonction d'affichage
+	
+	
+	
     void setRelay(int relayNumber, bool state); // Contrôle l'état d'un relais spécifique
 	
 	void updateDisplay(byte digit, byte segments); // Met à jour et envoie les données pour l'affichage
