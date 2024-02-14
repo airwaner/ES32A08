@@ -48,5 +48,5 @@ Consultez le dossier examples pour des exemples montrant comment utiliser la bib
 
 
 
-Contribution
+## **Contribution**
 Les contributions à ce projet sont bienvenues ! Si vous souhaitez contribuer, veuillez forker le dépôt, apporter vos changements, et soumettre une pull request.
