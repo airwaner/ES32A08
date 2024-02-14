@@ -1,26 +1,30 @@
 #include "ES32A08.h"
 
-// Constructeur et méthodes de NonBlockingDelay
+// Constructeur : initialise les membres de la classe avec des valeurs par défaut.
 NonBlockingDelay::NonBlockingDelay() : previousMillis(0), delayInterval(0), running(false) {}
 
+// Démarre le délai non bloquant avec un intervalle spécifié.
 void NonBlockingDelay::start(unsigned long interval) {
-    this->delayInterval = interval;
-    this->previousMillis = millis();
-    this->running = true;
+    this->delayInterval = interval; // Définit l'intervalle du délai.
+    this->previousMillis = millis(); // Enregistre le temps actuel comme point de départ du délai.
+    this->running = true; // Indique que le délai est maintenant actif.
 }
 
+// Vérifie si le délai est complété.
 bool NonBlockingDelay::isCompleted() {
-    if (!this->running) return false;
-    unsigned long currentMillis = millis();
+    if (!this->running) return false; // Si le délai n'est pas actif, retourne faux immédiatement.
+    unsigned long currentMillis = millis(); // Obtient le temps actuel.
+	// Vérifie si l'intervalle de délai s'est écoulé.
     if (currentMillis - this->previousMillis >= this->delayInterval) {
         this->running = false; // Arrête le délai
-        return true;
+        return true; // Retourne vrai, indiquant que le délai est complété.
     }
-    return false;
+    return false; // Retourne faux, le délai est toujours en cours.
 }
 
+// Vérifie si le délai est actuellement actif.
 bool NonBlockingDelay::isRunning() {
-    return this->running;
+    return this->running; // Retourne l'état actif du délai.
 }
 
 //-------------------------------------------------------------------------
@@ -28,7 +32,6 @@ bool NonBlockingDelay::isRunning() {
 ES32A08::ES32A08() {
 	// Initialise displayBuffer à 0
     memset(displayBuffer, 0, sizeof(displayBuffer));
-  // Constructor
 }
 
 void ES32A08::begin() {
@@ -119,49 +122,78 @@ DigitToSegment digitToSegmentMap[] = {
 };
 
 void ES32A08::sendToShiftRegister() {
-// Inversez les bits du paramètre `digits` pour que '0' active le digit
-    //digits = ~digits; // Cela inverse tous les bits; un '0' devient un '1' et vice versa. Essai car les digits restent noirs.
- 	//segments = ~segments; // Inverse aussi pour activer les segments avec un '0'
-    digitalWrite(LATCH_PIN, LOW);
+	digitalWrite(LATCH_PIN, LOW);
     shiftOut(DATA_PIN, CLOCK_PIN, MSBFIRST, currentRelays);
     shiftOut(DATA_PIN, CLOCK_PIN, MSBFIRST, currentDigits);
     shiftOut(DATA_PIN, CLOCK_PIN, MSBFIRST, currentSegments);
     digitalWrite(LATCH_PIN, HIGH);
-}
+} // Envoi vers les registres à décalage 74HC595D. Nécessite d'envoyer le flot complet de 3 bytes pour ne pas imposer d'état inconnu à quelconque registre. On envoie donc ici en série 24 bits.
 
 void ES32A08::updateDisplay(byte digit, byte segments){
-	currentDigits = digit; // Adaptez en fonction de votre logique
-    currentSegments = segments;
-    sendToShiftRegister(); // Met à jour l'affichage
+	currentDigits = digit; // Copie de l'argument digit dans le byte currentDigits
+    currentSegments = segments; // Copie de l'argument segments dans le byte currentSegments
+    sendToShiftRegister(); // Envoi vers les registres à décalage.
     // Note: Assurez-vous que toute logique ici est conçue pour être exécutée après l'intervalle spécifié
 }
 
 void ES32A08::displayButtonPressed(int button) {
     
-    // Affiche le chiffre correspondant au bouton appuyé
     updateDisplay(~(button), digitToSegment[button]);
-}
+}    // Affiche le chiffre correspondant au bouton appuyé à son emplacement.
 
+
+// Tableau de correspondance des caractères en binaire 8 bits. Le plus à gauche est le DP. Segments abcdefg en partant de la droite.
 uint8_t ES32A08::charToSegments(char c) {
     switch(c) {
-        case '0': return 0b00111111;
-        case '1': return 0b00000110;
-        case '2': return 0b01011011;
-		case '3': return 0b01001111;
-        case '4': return 0b01100110;
-        case '5': return 0b01101101;
-		case '6': return 0b01111101;
-        case '7': return 0b00000111;
-        case '8': return 0b01111111;
-		case '9': return 0b01101111;
-        case '.': return 0b10000000;
-        case ' ': return 0b00000000;
-		case 'A': return 0b01110111;
-		case '-': return 0b01000000;
-        // Ajouter les autres cas ici pour chaque caractère
+        case '0': return 0b00111111; // 0
+        case '1': return 0b00000110; // 1
+        case '2': return 0b01011011; // 2
+        case '3': return 0b01001111; // 3
+        case '4': return 0b01100110; // 4
+        case '5': return 0b01101101; // 5 ou S
+        case '6': return 0b01111101; // 6
+        case '7': return 0b00000111; // 7
+        case '8': return 0b01111111; // 8
+        case '9': return 0b01101111; // 9
+        case ' ': return 0b00000000; // espace
+        case '.': return 0b10000000; // point décimal
+        case '-': return 0b01000000; // tiret
+        case '_': return 0b00001000; // Underscore
+		case 'A': return 0b01110111; // A majuscule
+        case 'a': return 0b01011111; // a minuscule, différent de A
+        case 'B': case 'b': return 0b01111100; // b minuscule car B trop proche de 8.
+        case 'C': return 0b00111001; // C majuscule
+        case 'c': return 0b01011000; // c minuscule, différent de C
+        case 'D': case 'd': return 0b01011110; // D similaire à d pour éviter la confusion avec O
+        case 'E': return 0b01111001; // E majuscule,
+        case 'e': return 0b01111011; // e minuscule,
+        case 'F': case 'f': return 0b01110001; // F similaire à f
+        case 'G': case 'g': return 0b01101111; // g minuscule, choisie pour G car plus claire, évitant la confusion avec 9
+        case 'H': return 0b01110110; // H majuscule
+        case 'h': return 0b01110100; // h minuscule, différent de H
+        case 'I': return 0b00000110; // I majuscule, identique à 1
+        case 'i': return 0b00010000; // i minuscule, point central
+        case 'J': case 'j': return 0b00011110; // j minuscule, identique à J pour la clarté        
+        case 'L': return 0b00111000; // L majuscule
+        case 'l': return 0b00011000; // l minuscule, différent de L
+        case 'M': case 'm': return 0b00110111; // M majuscule, et m minuscule, même représentation
+        case 'N': case 'n': return 0b01010100; // N majuscule et n minuscule, même représentation
+        case 'O': case 'o': return 0b01011100; // o minuscule uniquement, sinon trop proche de Zéro.
+        case 'P': case 'p': return 0b01110011; // p minuscule, identique à P, pas de représentation distincte nécessaire
+        case 'Q': case 'q': return 0b01100111; // q minuscule, uniquement
+        case 'R': case 'r': return 0b01010000; // r minuscule, uniquement.
+        case 'S': case 's': return 0b01101101; // S majuscule , identique à 5, utilisée pour S
+        case 'T': case 't': return 0b01111000; // t minuscule
+        case 'U': return 0b00111110; // U majuscule
+        case 'u': return 0b00011100; // u minuscule, différent de U
+        case 'Y': case 'y': return 0b01100110; // y minuscule, identique à Y, pas de représentation distincte nécessaire
+        case 'Z': case 'z': return 0b01011011; // z minuscule, identique à 2, utilisée pour Z
+
+        // Ajouter les autres cas ici pour ajouter d'autres caractères.
         default:  return 0b00000000; // Retourne 0 pour les caractères non reconnus
     }
 }
+
 
 // Fonction d'affichage pour les chaines de caractères:
 void ES32A08::afficher(const char* message) {
