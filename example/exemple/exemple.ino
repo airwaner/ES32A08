@@ -23,16 +23,16 @@ void setup() {
 void loop() {
 
 if (board.delay1.isRunning()) {
-board.afficher("A15A"); // Exemple avec un nombre
+board.afficher("Menu"); // Exemple avec un nombre
 } // Si le délai 1 (non bloquant) est toujours en cours
 
 if (board.delay1.isCompleted()) {
-board.delay2.start(5000); 
+board.delay2.start(1000); 
 board.afficher(" 0. "); // Exemple avec un nombre
 } // Si le délai 1 (non bloquant) est terminé (valide 1 seule itération)
 
 if (board.delay2.isRunning()) {
-board.afficher(" 0. "); // Exemple avec un nombre
+board.afficher("Test"); // Exemple avec un nombre
 } // Si le délai 1 (non bloquant) est toujours en cours
 
   board.updatePWRLED();  // Fais clignoter à chaque itération du programme si la fonction togglePWRLEDAsHeartbeat(true); à étét déclarée en setup().
