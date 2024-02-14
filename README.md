@@ -6,10 +6,10 @@ La bibliothèque ES32A08 est conçue pour faciliter l'utilisation de la carte d'
 
     Contrôle de 8 relais via les registres à décalage 74HC595D.
     Lecture de 8 entrées numériques avec le registre à décalage 74HC165.
-    Affichage de valeurs sur un afficheur 4 digits.
-    Lecture des entrées analogiques 4-20mA et 0-10V.
-    Contrôle d'une LED de puissance et d'une LED intégrée comme indicateur de fonctionnement (heartbeat).
-    Délais non bloquants pour des opérations asynchrones.
+    Affichage de valeurs numériques, flottantes ou texte sur un afficheur 4 digits.
+    Lecture de 4 entrées analogiques 4-20mA et 4 entrées 0-10V.
+    Contrôle de la LED "PWR" et d'une LED intégrée à l'ESP32 comme indicateur de fonctionnement (heartbeat).
+    Implémentation d'une logique de délais non bloquants pour des opérations asynchrones.
 
 ## **Installation**
 
